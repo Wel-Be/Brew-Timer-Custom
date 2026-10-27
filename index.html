@@ -60,6 +60,8 @@ ol li{counter-increment:n;position:relative;padding:8px 0 8px 40px;font-size:15p
 ol li::before{content:counter(n);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:#5a79ab;color:#fff;text-align:center;line-height:28px;font-size:14px;font-weight:700}
 ol li i{display:block;font-style:normal;font-size:12px;color:#888}
 .pilltag{display:inline-block;background:#d9e6f6;color:var(--navy);font-weight:700;border-radius:20px;padding:6px 16px;font-size:16px}
+.rc{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:var(--gb);border-radius:18px;padding:16px 18px;margin-bottom:12px;color:var(--text)}.rc.on{background:#e6f0fb}.rc b{font-size:17px;color:var(--navy);word-break:break-all}.rc small{display:block;font-size:13px;color:#666;margin-top:4px}.tag{margin-left:8px;font-size:12px;color:#fff;background:var(--blue);border-radius:10px;padding:2px 8px;vertical-align:2px}.ar{color:#999;font-size:22px;margin-left:8px}
+.srow{display:grid;grid-template-columns:52px 1fr auto;gap:10px;padding:9px 0;font-size:15px;border-bottom:1px solid #e0dbd2}.srow:last-child{border:0}.srow.end{color:var(--navy);font-weight:700}.btn.dis{background:#cfd8e3;color:#fff;cursor:default}
 #upd{display:none;position:absolute;left:16px;right:16px;bottom:max(14px,env(safe-area-inset-bottom));background:var(--gb);border-radius:14px;padding:10px 12px 10px 16px;font-size:13px;align-items:center;gap:8px}
 #upd span{flex:1}#upd .u{background:none;color:var(--blue);font-weight:700;font-size:14px;padding:6px}#upd .x{background:none;color:#888;font-size:18px;padding:4px 8px}
 #modal{display:none;position:fixed;inset:0;background:#0006;z-index:50;align-items:center;justify-content:center;padding:28px}
@@ -76,7 +78,7 @@ ol li i{display:block;font-style:normal;font-size:12px;color:#888}
 <div id="home" class="screen on">
   <div class="top"><span></span><h1>Brew Timer</h1>
     <button class="icon-btn" id="gear" aria-label="設定"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
-  <div class="center"><p style="font-size:18px;line-height:1.8;margin:0">粉15g、お湯225g（90℃）を<br>準備してください。</p>
+  <div class="center"><div><div id="rn" class="pilltag" style="font-size:14px;margin-bottom:14px;word-break:break-all"></div><p id="hint" style="font-size:18px;line-height:1.8;margin:0"></p></div>
     <button class="btn primary" id="start">START</button></div>
   <div id="upd"><span>新しいバージョンがあります</span><button class="u" id="updgo">更新する</button><button class="x" id="updx" aria-label="閉じる">×</button></div>
 </div>
@@ -97,12 +99,14 @@ ol li i{display:block;font-style:normal;font-size:12px;color:#888}
 </div>
 
 <div id="done" class="screen"><div class="center"><h1 style="font-size:26px;line-height:1.5">おいしいコーヒーの<br>できあがり！</h1>
+  <img src="icon-512.png" alt="" width="180" height="180" style="width:min(44vw,180px);height:auto;display:block;pointer-events:none">
   <div style="width:100%;display:flex;flex-direction:column;gap:12px"><button class="btn primary" id="again">最初から</button><button class="btn sec" id="fin">終了</button></div></div></div>
 
 <div id="settings" class="screen">
   <button class="back" data-to="home" aria-label="戻る"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <h1 style="margin:2px 0 14px">設定</h1>
   <div class="scroll">
+    <button class="link" id="torecipes">レシピ設定 ›<small id="rcur" style="display:block;font-weight:400;color:#666;font-size:13px;margin-top:4px;word-break:break-all"></small></button>
     <div class="box main-card"><div class="sw"><span>工程切り替え時に音を鳴らす</span><button class="tg" id="tg" role="switch" aria-label="工程切り替え時に音を鳴らす"></button></div>
       <p style="color:#555">ONにすると、工程が切り替わったときにベル音が1回鳴ります。ONにした瞬間にテスト音を再生します。</p></div>
     <button class="link" data-to="install">ホーム画面への追加方法 ›</button>
@@ -140,23 +144,25 @@ ol li i{display:block;font-style:normal;font-size:12px;color:#888}
   </div>
 </div>
 
-<div id="modal"><div><p>抽出を中止して<br>最初からやり直しますか？</p>
+<div id="recipes" class="screen"><button class="back" data-to="settings" aria-label="戻る"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h1 style="margin:2px 0 14px">レシピ設定</h1><div class="scroll" id="rlist"></div></div>
+<div id="detail" class="screen"><button class="back" data-to="recipes" aria-label="戻る"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="dn" style="margin:2px 0 14px;word-break:break-all"></h1><div class="scroll"><div class="box" id="dbase"></div><div class="box" id="dsteps"></div></div><div style="display:flex;flex-direction:column;gap:10px;padding-top:8px"><button class="btn primary" id="duse"></button><button class="btn ghost" id="ddel">削除</button></div></div>
+<div id="modal"><div><p id="mq"></p>
   <div class="row"><button class="btn sec" id="no">いいえ</button><button class="btn primary" id="yes">はい</button></div></div></div>
 <div id="land">端末を縦向きに戻してください</div>
 <div id="err">アプリを読み込めませんでした。<br>インターネット接続を確認して、もう一度読み込んでください。</div>
 
 <script>
-const VERSION='1.0.5',UPDATED='2026年10月26日',TOTAL=180;
-const STEPS=[[0,'蒸らし',30],[30,'2回目',120],[60,'3回目',150],[80,'4回目',190],[100,'5回目',225]];
+const VERSION='1.1.0',UPDATED='2026年10月27日';
+const STD={id:'std',name:'標準レシピ',coffee:15,water:225,temp:90,end:180,steps:[{t:0,name:'蒸らし',g:30},{t:30,name:'2回目の注湯',g:120},{t:60,name:'3回目の注湯',g:150},{t:80,name:'4回目の注湯',g:190},{t:100,name:'5回目の注湯',g:225}]};
 const $=s=>document.querySelector(s);
 const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const fm=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 const fm2=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 let st=rd('bt_state',{mode:'idle'}),cfg=rd('bt_cfg',{sound:false});
-let monoRef=0,lastIdx=-1,silent=false,msg='',msgUntil=0,timer=null,cdTimers=[],ctx=null,lock=null,cdActive=false;
+let rec=rd('bt_rec',[]),curId=rd('bt_cur','std'),R=STD,monoRef=0,lastIdx=-1,silent=false,msg='',msgUntil=0,timer=null,cdTimers=[],ctx=null,lock=null,cdActive=false;
 
-function go(n){document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('on',e.id===n));document.body.classList.toggle('paused',n==='brew'&&st.mode==='pause');if(n==='home')showUpd()}
+function go(n){if(n==='home')paintHome();if(n==='settings')paintSettings();if(n==='recipes')renderList();document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('on',e.id===n));document.body.classList.toggle('paused',n==='brew'&&st.mode==='pause');if(n==='home')showUpd()}
 document.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>go(b.dataset.to));
 $('#gear').onclick=()=>go('settings');
 $('#ver').textContent=VERSION;$('#upd8').textContent=UPDATED;
@@ -179,20 +185,20 @@ function elapsed(){return st.mode==='run'?st.base+(performance.now()-monoRef):st
 function save(){wr('bt_state',st)}
 function resync(){if(st.mode==='run'){st.base=st.base+(Date.now()-st.wallRef);st.wallRef=Date.now();monoRef=performance.now();save();silent=true}}
 
-function idxOf(e){let i=0;STEPS.forEach((s,k)=>{if(e>=s[0])i=k});return i}
+function idxOf(e){let i=0;R.steps.forEach((s,k)=>{if(e>=s.t)i=k});return i}
 function tick(){
   if(st.mode==='idle')return;
   const e=Math.floor(elapsed()/1000);
-  if(e>=TOTAL){finish();return}
-  const i=idxOf(e);
+  if(e>=R.end){finish();return}
+  const S=R.steps,L=S.length-1,i=idxOf(e);
   if(i!==lastIdx){
-    if(lastIdx>=0&&!silent&&i===lastIdx+1&&i>=1){msg='次は'+STEPS[i][1]+'の注湯です';msgUntil=performance.now()+3000;if(cfg.sound&&document.visibilityState==='visible')bell()}
+    if(lastIdx>=0&&!silent&&i===lastIdx+1&&i>=1){msg='次は'+S[i].name+'です';msgUntil=performance.now()+3000;if(cfg.sound&&document.visibilityState==='visible')bell()}
     lastIdx=i;silent=false;
   }
-  const c=performance.now()<msgUntil?msg:(i===4?'抽出中':STEPS[i][1]);
-  $('#cur').textContent=c;$('#g').textContent=STEPS[i][2]+'g';$('#t').textContent=fm2(e);
-  if(i<4){$('#nx1').textContent='次の工程（'+STEPS[i+1][1]+'）';$('#nx2').textContent=fm(STEPS[i+1][0])+' 開始予定'}
-  else{$('#nx1').textContent='抽出完了';$('#nx2').textContent=fm(TOTAL)+' 予定'}
+  const c=performance.now()<msgUntil?msg:(i===L&&i>=1?'抽出中':S[i].name);
+  $('#cur').textContent=c;$('#g').textContent=S[i].g+'g';$('#t').textContent=fm2(e);
+  if(i<L){$('#nx1').textContent='次の工程（'+S[i+1].name+'）';$('#nx2').textContent=fm(S[i+1].t)+' 開始予定'}
+  else{$('#nx1').textContent='抽出完了';$('#nx2').textContent=fm(R.end)+' 予定'}
 }
 function runLoop(){clearInterval(timer);timer=setInterval(tick,200);tick()}
 function stopLoop(){clearInterval(timer);timer=null}
@@ -201,16 +207,18 @@ function paintPP(){const p=st.mode==='pause';$('#pp').textContent=p?'再開':'�
 /* flow */
 function reset(){st={mode:'idle'};save();stopLoop();wl(false);lastIdx=-1;msg='';msgUntil=0;go('home')}
 function finish(){stopLoop();wl(false);st={mode:'idle'};save();go('done')}
-function enterBrew(){lastIdx=-1;silent=true;go('brew');paintPP();wl(true);runLoop()}
+function enterBrew(){R=st.r||STD;lastIdx=-1;silent=true;go('brew');paintPP();wl(true);runLoop()}
 $('#start').onclick=()=>{audio();cdActive=true;go('count');let n=3;$('#cd').textContent=n;
   const step=()=>{n--;if(n>0){$('#cd').textContent=n;cdTimers.push(setTimeout(step,1000))}else{cdActive=false;
-    st={mode:'run',base:0,wallRef:Date.now()};monoRef=performance.now();save();enterBrew()}};
+    st={mode:'run',base:0,wallRef:Date.now(),r:JSON.parse(JSON.stringify(active()))};monoRef=performance.now();save();enterBrew()}};
   cdTimers.push(setTimeout(step,1000))};
 function cancelCd(){cdTimers.forEach(clearTimeout);cdTimers=[];cdActive=false;go('home')}
 $('#pp').onclick=()=>{if(st.mode==='run'){st.base=elapsed();st.mode='pause';save()}else if(st.mode==='pause'){st.mode='run';st.wallRef=Date.now();monoRef=performance.now();save()}paintPP();tick()};
-$('#redo').onclick=()=>$('#modal').classList.add('on');
+let askFn=null;
+const ask=(q,c,o,fn)=>{$('#mq').innerHTML=q;$('#no').textContent=c;$('#yes').textContent=o;askFn=fn;$('#modal').classList.add('on')};
 $('#no').onclick=()=>$('#modal').classList.remove('on');
-$('#yes').onclick=()=>{$('#modal').classList.remove('on');reset()};
+$('#yes').onclick=()=>{$('#modal').classList.remove('on');askFn&&askFn()};
+$('#redo').onclick=()=>ask('抽出を中止して<br>最初からやり直しますか？','いいえ','はい',reset);
 $('#again').onclick=reset;$('#fin').onclick=reset;
 
 document.addEventListener('visibilitychange',()=>{
@@ -222,9 +230,32 @@ document.addEventListener('visibilitychange',()=>{
 /* restore */
 (function(){
   if(st.mode==='run'){const e=st.base+(Date.now()-st.wallRef);st.base=e;st.wallRef=Date.now();monoRef=performance.now();
-    if(e>=TOTAL*1000){st={mode:'idle'};save();go('done');return}enterBrew()}
-  else if(st.mode==='pause'){if(st.base>=TOTAL*1000){st={mode:'idle'};save();go('done')}else enterBrew()}
+    if(e>=((st.r||STD).end)*1000){st={mode:'idle'};save();go('done');return}enterBrew()}
+  else if(st.mode==='pause'){if(st.base>=((st.r||STD).end)*1000){st={mode:'idle'};save();go('done')}else enterBrew()}
 })();
+
+/* recipes */
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function active(){return rec.find(x=>x.id===curId)||STD}
+const cond=x=>`粉${x.coffee}g・湯${x.water}g・${x.temp}℃・${x.steps.length+1}工程`;
+function paintHome(){const x=active();$('#rn').textContent=x.name;$('#hint').innerHTML=`粉${x.coffee}g、お湯${x.water}g（${x.temp}℃）を<br>準備してください。`}
+function paintSettings(){$('#rcur').textContent=active().name}
+$('#torecipes').onclick=()=>go('recipes');
+function renderList(){const a=active();
+  const rest=[...(a.id==='std'?[]:[STD]),...rec.filter(x=>x.id!==a.id).sort((p,q)=>(q.created||0)-(p.created||0))];
+  const card=(x,on)=>`<button class="rc${on?' on':''}" data-id="${esc(x.id)}"><div><b>${esc(x.name)}</b>${on?'<span class="tag">使用中</span>':''}<small>${cond(x)}</small></div><span class="ar">›</span></button>`;
+  const el=$('#rlist');el.innerHTML=card(a,true)+rest.map(x=>card(x,false)).join('');el.scrollTop=0;
+  el.querySelectorAll('.rc').forEach(b=>b.onclick=()=>openDetail(b.dataset.id))}
+let dId='std';
+function openDetail(id){const x=id==='std'?STD:rec.find(y=>y.id===id);if(!x){go('recipes');return}
+  dId=id;$('#dn').textContent=x.name;
+  $('#dbase').innerHTML=`<p>粉量：${x.coffee}g</p><p>湯量：${x.water}g</p><p>湯温：${x.temp}℃</p>`;
+  $('#dsteps').innerHTML=x.steps.map(t=>`<div class="srow"><span>${fm(t.t)}</span><span>${esc(t.name)}</span><span>${t.g}g</span></div>`).join('')+`<div class="srow end"><span>${fm(x.end)}</span><span>抽出完了</span><span></span></div>`;
+  const on=active().id===x.id,b=$('#duse');b.textContent=on?'使用中':'このレシピを使用する';b.disabled=on;b.classList.toggle('dis',on);
+  $('#ddel').style.display=x.id==='std'?'none':'block';go('detail')}
+$('#duse').onclick=()=>{curId=dId;wr('bt_cur',curId);go('home')};
+$('#ddel').onclick=()=>ask('このレシピを削除しますか？','キャンセル','削除',()=>{rec=rec.filter(x=>x.id!==dId);wr('bt_rec',rec);if(curId===dId){curId='std';wr('bt_cur',curId)}go('recipes')});
+paintHome();
 
 /* GoatCounter (online only) */
 if(navigator.onLine){const s=document.createElement('script');s.async=true;s.dataset.goatcounter='https://wel-be.goatcounter.com/count';s.src='//gc.zgo.at/count.js';document.head.appendChild(s)}

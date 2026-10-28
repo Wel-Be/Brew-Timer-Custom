@@ -66,6 +66,7 @@ ol li i{display:block;font-style:normal;font-size:12px;color:#888}
 .fr{display:flex;align-items:center;gap:8px;margin:6px 0}.fr label{width:52px;font-size:15px}.fr .in{flex:1;text-align:right}
 .err{color:var(--red);font-size:13px;margin-top:4px}.errbox{background:#fdecec;color:var(--red);border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px}
 .srow2{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:start;width:100%;text-align:left;background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;font-size:15px;color:var(--text)}.srow2.end{background:#eef5fd;color:var(--navy);font-weight:700}.srow2 small{display:block;color:var(--red);font-size:12px;font-weight:400}
+.stp{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px}.stp.end{background:#eef5fd}.sdel{background:none;color:var(--red);font-size:13px;padding:6px 0;text-decoration:underline}
 #upd{display:none;position:absolute;left:16px;right:16px;bottom:max(14px,env(safe-area-inset-bottom));background:var(--gb);border-radius:14px;padding:10px 12px 10px 16px;font-size:13px;align-items:center;gap:8px}
 #upd span{flex:1}#upd .u{background:none;color:var(--blue);font-weight:700;font-size:14px;padding:6px}#upd .x{background:none;color:#888;font-size:18px;padding:4px 8px}
 #modal{display:none;position:fixed;inset:0;background:#0006;z-index:50;align-items:center;justify-content:center;padding:28px}
@@ -171,7 +172,7 @@ ol li i{display:block;font-style:normal;font-size:12px;color:#888}
 <div id="err">アプリを読み込めませんでした。<br>インターネット接続を確認して、もう一度読み込んでください。</div>
 
 <script>
-const VERSION='1.2.0',UPDATED='2026年10月27日';
+const VERSION='1.3.0',UPDATED='2026年10月27日';
 const STD={id:'std',name:'基本のレシピ',coffee:15,water:225,temp:90,end:180,steps:[{t:0,name:'蒸らし',g:30},{t:30,name:'2回目の注湯',g:120},{t:60,name:'3回目の注湯',g:150},{t:80,name:'4回目の注湯',g:190},{t:100,name:'5回目の注湯',g:225}]};
 const $=s=>document.querySelector(s);
 const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -294,22 +295,23 @@ function validate(asNew){const e={steps:{}};let n=0;const bad=(k,m)=>{e[k]=m;n++
     if(s.g==null||s.g<1)m.push('湯量は1g以上で入力');else if(D.water&&s.g>D.water)m.push('総湯量を超えています');else if(i>0&&s.g<=S[i-1].g)m.push('前の工程より大きくしてください');
     if(i===S.length-1&&D.water&&s.g!==D.water)m.push('最後の工程は総湯量と同じにしてください');
     if(m.length){e.steps[i]=m.join('／');n++}});
-  if(S.length<1||S.length>9)bad('steps','工程は1〜9個にしてください。');
+  if(S.length<1||S.length>9)bad('count','工程は1〜9個にしてください。');
   const last=S[S.length-1];
   if(D.end>600)bad('end','抽出完了は10:00までです。');else if(last&&D.end<=last.t)bad('end','抽出完了は最後の工程より後にしてください。');
   e.n=n;return e}
-function renderSteps(e){e=e||{steps:{}};
-  $('#esteps').innerHTML=D.steps.map((s,i)=>`<button class="srow2" data-i="${i}"><span>${fm(s.t)}</span><span>${esc(s.name)}${e.steps[i]?`<small>${esc(e.steps[i])}</small>`:''}</span><span>${s.g==null?'':s.g+'g'}</span></button>`).join('')+`<button class="srow2 end" data-i="end"><span>${fm(D.end)}</span><span>抽出完了${e.end?`<small>${esc(e.end)}</small>`:''}</span><span></span></button>`;
-  $('#esteps').querySelectorAll('.srow2').forEach(b=>b.onclick=()=>openStep(b.dataset.i))}
-function showErr(e){['name','coffee','water','temp','steps'].forEach(k=>$('#e-'+k).textContent=e[k]||'');$('#esum').style.display=e.n?'block':'none';renderSteps(e)}
-function refresh(){if(tried)showErr(validate(lastNew));else renderSteps()}
+function buildSteps(){
+  $('#esteps').innerHTML=D.steps.map((s,i)=>`<div class="stp"><div class="fr"><label>開始</label><input class="in tm" data-i="${i}" inputmode="numeric" value="${fm(s.t)}"${i===0?' disabled':''}><span>分:秒</span></div><div class="fr"><label>工程名</label><input class="in nm" data-i="${i}" value="${esc(s.name)}"></div><div class="fr"><label>湯量</label><input class="in gg" data-i="${i}" inputmode="numeric" value="${s.g??''}"><span>g</span></div><div class="err serr" data-i="${i}"></div>${i>0?`<button class="sdel" data-i="${i}">この工程を削除</button>`:''}</div>`).join('')+`<div class="stp end"><b style="color:var(--navy)">抽出完了</b><div class="fr"><label>開始</label><input class="in tm" data-i="-1" inputmode="numeric" value="${fm(D.end)}"><span>分:秒</span></div><div class="err" id="e-end"></div></div>`}
+function updErr(e){[['name','name'],['coffee','coffee'],['water','water'],['temp','temp'],['count','steps']].forEach(([k,id])=>$('#e-'+id).textContent=e[k]||'');
+  $('#esum').style.display=e.n?'block':'none';
+  document.querySelectorAll('#esteps .serr').forEach(x=>x.textContent=e.steps[x.dataset.i]||'');$('#e-end').textContent=e.end||''}
+function refresh(){if(tried)updErr(validate(lastNew))}
 function openEditor(){snap=JSON.stringify(D);tried=false;
   $('#etitle').textContent=D.id?'レシピ編集':'新しいレシピ';$('#ename').value=D.name;
   $('#ecoffee').value=D.coffee??'';$('#ewater').value=D.water??'';$('#etemp').value=D.temp??'';
-  $('#esaveas').style.display=D.id?'block':'none';showErr({steps:{},n:0});go('edit');$('#edit .scroll').scrollTop=0}
+  $('#esaveas').style.display=D.id?'block':'none';buildSteps();updErr({steps:{},n:0});go('edit');$('#edit .scroll').scrollTop=0}
 $('#ename').oninput=e=>{D.name=e.target.value;refresh()};
-[['ecoffee','coffee'],['ewater','water'],['etemp','temp']].forEach(([id,k])=>$('#'+id).oninput=e=>{const v=e.target.value.replace(/\D/g,'');e.target.value=v;D[k]=v===''?null:+v;if(k==='water'&&D.water)D.steps[D.steps.length-1].g=D.water;refresh()});
-function doSave(asNew){tried=true;lastNew=asNew;const e=validate(asNew);showErr(e);if(e.n){$('#edit .scroll').scrollTop=0;return null}
+[['ecoffee','coffee'],['ewater','water'],['etemp','temp']].forEach(([id,k])=>$('#'+id).oninput=e=>{const v=e.target.value.replace(/\D/g,'');e.target.value=v;D[k]=v===''?null:+v;if(k==='water'&&D.water)D.steps[D.steps.length-1].g=D.water;const gs=document.querySelectorAll('#esteps .gg');if(gs.length)gs[gs.length-1].value=D.water;refresh()});
+function doSave(asNew){tried=true;lastNew=asNew;const e=validate(asNew);updErr(e);if(e.n){$('#edit .scroll').scrollTop=0;return null}
   const o=clone(D);o.name=o.name.trim();
   if(asNew||!D.id){o.id='r'+Date.now();o.created=Date.now();rec.push(o)}else{const k=rec.findIndex(x=>x.id===D.id);o.created=rec[k].created;rec[k]=o}
   wr('bt_rec',rec);return o.id}
@@ -324,6 +326,17 @@ function renderSrc(){const l=[STD,...rec.slice().sort((a,b)=>(b.created||0)-(a.c
 $('#newbtn').onclick=()=>{renderSrc();go('src')};
 $('#srcback').onclick=()=>go('recipes');
 $('#dedit').onclick=()=>{const x=rec.find(y=>y.id===dId);if(x){D=clone(x);openEditor()}};
+const ES=$('#esteps');
+ES.oninput=ev=>{const t=ev.target,i=+t.dataset.i;
+  if(t.classList.contains('tm'))t.value=tfmt(t.value);
+  else if(t.classList.contains('nm')){D.steps[i].name=t.value;refresh()}
+  else if(t.classList.contains('gg')){const v=t.value.replace(/\D/g,'');t.value=v;D.steps[i].g=v===''?null:+v;refresh()}};
+ES.onchange=ev=>{const t=ev.target;if(!t.classList.contains('tm'))return;const i=+t.dataset.i,v=tparse(t.value);
+  if(v==null||v>600||(i>=0&&v<1)){t.value=fm(i<0?D.end:D.steps[i].t);const m=i<0?$('#e-end'):ES.querySelector('.serr[data-i="'+i+'"]');if(m)m.textContent='開始時刻を正しく入力してください（例：030 → 0:30、最大10:00）。';return}
+  if(i<0)D.end=v;else{D.steps[i].t=v;D.steps.sort((a,b)=>a.t-b.t)}
+  buildSteps();refresh()};
+ES.onclick=ev=>{const b=ev.target.closest('.sdel');if(!b)return;const i=+b.dataset.i;
+  ask('この工程を削除しますか？','キャンセル','削除',()=>{const wasLast=i===D.steps.length-1;D.steps.splice(i,1);if(wasLast&&D.water)D.steps[D.steps.length-1].g=D.water;buildSteps();refresh()})};
 /* step editor */
 function fillStep(){const end=sIdx===-1;$('#stitle').textContent=sIdx===-2?'工程を追加':'工程編集';
   $('#sf-name').style.display=$('#sf-g').style.display=end?'none':'block';
@@ -335,7 +348,7 @@ $('#eadd').onclick=()=>{if(D.steps.length>=9){$('#e-steps').textContent='工程�
 $('#sname').oninput=e=>S2.name=e.target.value;
 $('#stime').oninput=e=>{const f=tfmt(e.target.value);e.target.value=f;S2.tx=f};
 $('#sg').oninput=e=>{const v=e.target.value.replace(/\D/g,'');e.target.value=v;S2.g=v===''?null:+v};
-const back2edit=()=>{refresh();go('edit')};
+const back2edit=()=>{buildSteps();refresh();go('edit')};
 $('#sback').onclick=()=>{if(JSON.stringify(S2)===sSnap)back2edit();else ask('この工程の変更を破棄しますか？','編集を続ける','破棄する',back2edit)};
 $('#ssave').onclick=()=>{const end=sIdx===-1;let bad=0;const E=(k,m)=>{$('#s-'+k).textContent=m;bad=1};['name','time','g'].forEach(k=>$('#s-'+k).textContent='');
   const t=sIdx===0?0:tparse(S2.tx);
